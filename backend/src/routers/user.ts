@@ -3,12 +3,64 @@ import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import { bucketName, minioClient } from "../lib/store";
 import { authMiddleware } from "../middleware";
+import { createTaskInput } from "../types";
 
 const JWT_SECRET = process.env.JWT_SECRET!
+const DEFAULT_TITLE = "Select the most clickable thumbnail"
 
 const router = Router()
-
 const prismaClient = new PrismaClient()
+
+
+router.get('/task', authMiddleware, async (req, res) => { 
+    //@ts-ignore
+    const taskID = req.query.taskID
+})
+
+router.post('/task', authMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userID = req.userID
+    const body = req.body
+    const parseData = createTaskInput.safeParse(body)
+
+    if (!parseData.success) {
+        return res.status(411).json({
+            message: "You've sent wrong inputs"
+        })
+    }
+
+    //parse the signature here to ensure the person has paid
+
+    try {
+        const response = await prismaClient.$transaction(async (tx) => {
+
+            const response = await prismaClient.task.create({
+                data: {
+                    title: parseData.data.title ?? DEFAULT_TITLE,
+                    signature: parseData.data.signature,
+                    amount: "1",
+                    user_id: userID
+                }
+            })
+
+            await tx.option.createMany({
+                data: parseData.data.options.map(x => ({
+                    image_url: x.imageURL,
+                    task_id: response.id
+                }))
+            })
+
+            return response
+        })
+
+        res.json({
+            id: response.id
+        })
+    }
+    catch (err) {
+        console.log(err);
+    }
+})
 
 router.get('/presignedUrl', authMiddleware, async (req, res) => {
     //@ts-ignore
