@@ -2,17 +2,18 @@ import { Router } from "express";
 import jwt from 'jsonwebtoken'
 import { PrismaClient } from '@prisma/client'
 import { bucketName, minioClient } from "../lib/store";
-import { authMiddleware } from "../middleware";
+import { userAuthMiddleware } from "../middleware";
 import { createTaskInput } from "../types";
+import { TOTAL_DECIMALS } from "../config";
 
-const JWT_SECRET = process.env.JWT_SECRET!
+const USER_JWT_SECRET = process.env.USER_JWT_SECRET!
 const DEFAULT_TITLE = "Select the most clickable thumbnail"
 
 const router = Router()
 const prismaClient = new PrismaClient()
 
 
-router.get('/task', authMiddleware, async (req, res) => {
+router.get('/task', userAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const userID: string = req.userID
     //@ts-ignore
@@ -66,7 +67,7 @@ router.get('/task', authMiddleware, async (req, res) => {
     res.json({ result })
 })
 
-router.post('/task', authMiddleware, async (req, res) => {
+router.post('/task', userAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const userID = req.userID
     const body = req.body
@@ -83,11 +84,11 @@ router.post('/task', authMiddleware, async (req, res) => {
     try {
         const response = await prismaClient.$transaction(async (tx) => {
 
-            const response = await prismaClient.task.create({
+            const response = await tx.task.create({
                 data: {
                     title: parseData.data.title ?? DEFAULT_TITLE,
                     signature: parseData.data.signature,
-                    amount: "1",
+                    amount: 1 * TOTAL_DECIMALS,
                     user_id: userID
                 }
             })
@@ -111,7 +112,7 @@ router.post('/task', authMiddleware, async (req, res) => {
     }
 })
 
-router.get('/presignedUrl', authMiddleware, async (req, res) => {
+router.get('/presignedUrl', userAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const userID = req.userID
     const objectName = `${userID}/IPFS.jpg`
@@ -142,7 +143,7 @@ router.post('/signin', async (req, res) => {
             const token = jwt.sign({
                 userID: existingUser.id
             },
-                JWT_SECRET,
+                USER_JWT_SECRET,
                 { expiresIn: '1d' }
             )
 
@@ -158,7 +159,7 @@ router.post('/signin', async (req, res) => {
             const token = jwt.sign({
                 userID: user.id
             },
-                JWT_SECRET,
+                USER_JWT_SECRET,
                 { expiresIn: '1d' }
             )
 
