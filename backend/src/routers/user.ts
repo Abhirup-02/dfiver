@@ -12,9 +12,58 @@ const router = Router()
 const prismaClient = new PrismaClient()
 
 
-router.get('/task', authMiddleware, async (req, res) => { 
+router.get('/task', authMiddleware, async (req, res) => {
     //@ts-ignore
-    const taskID = req.query.taskID
+    const userID: string = req.userID
+    //@ts-ignore
+    const taskID: string = req.query.taskID
+
+    const taskDetails = await prismaClient.task.findFirst({
+        where: {
+            user_id: Number(userID),
+            id: Number(taskID)
+        },
+        include: {
+            options: true
+        }
+    })
+
+    if (!taskDetails) {
+        return res.status(411).json({
+            message: "You don't have access to this task"
+        })
+    }
+
+    const responses = await prismaClient.submission.findMany({
+        where: {
+            task_id: Number(taskID)
+        },
+        include: {
+            option: true
+        }
+    })
+
+    const result: Record<string, {
+        count: number,
+        option: {
+            imageURL: string
+        }
+    }> = {}
+
+    taskDetails.options.forEach(option => {
+        result[option.id] = {
+            count: 0,
+            option: {
+                imageURL: option.image_url
+            }
+        }
+    })
+
+    responses.forEach(r => {
+        result[r.option_id].count++
+    })
+
+    res.json({ result })
 })
 
 router.post('/task', authMiddleware, async (req, res) => {
