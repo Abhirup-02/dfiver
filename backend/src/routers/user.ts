@@ -115,32 +115,34 @@ router.post('/task', userAuthMiddleware, async (req, res) => {
 router.get('/presignedUrl', userAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const userID = req.userID
-    const objectName = `${userID}/IPFS.jpg`
+
+    const { filename } = req.query
+    const objectName = `${userID}/${filename}`
 
     try {
-        const presignedURL = await minioClient.presignedPutObject(bucketName, objectName, 24 * 60 * 60)
-
-        console.log(presignedURL);
+        const presignedURL = await minioClient.presignedPutObject(bucketName, objectName, 1 * 60 * 60)
 
         res.json({ presignedURL })
     }
     catch (err) {
-        console.log(err);
+        console.log(err)
     }
 })
 
 router.post('/signin', async (req, res) => {
-    const walletAddress = "9uXGPXSvJFy7hB6KgniQ99yWvmveTJ4rNDyXHb6U7E8P"
+    const { publicKey, signature } = req.body
+
+    // verify signature
 
     try {
         const existingUser = await prismaClient.user.findFirst({
             where: {
-                address: walletAddress
+                address: publicKey
             }
         })
 
         if (existingUser) {
-            const token = jwt.sign({
+            const token = jwt.sign({            // send JWT token in cookies
                 userID: existingUser.id
             },
                 USER_JWT_SECRET,
@@ -152,7 +154,7 @@ router.post('/signin', async (req, res) => {
         else {
             const user = await prismaClient.user.create({
                 data: {
-                    address: walletAddress
+                    address: publicKey
                 }
             })
 
