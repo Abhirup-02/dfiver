@@ -34,7 +34,7 @@ export async function getPresignedURL(filename: string) {
 
         const data = await res.json()
 
-        return data.presignedURL
+        return data
     }
     catch (err) {
         console.error(err)

@@ -18,7 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-[#010101] text-white">
+      <body className="bg-[#131313] text-white">
         <AppWalletProvider>
           <Appbar />
           {children}

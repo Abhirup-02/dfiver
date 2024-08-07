@@ -122,18 +122,15 @@ router.get('/presignedUrl', userAuthMiddleware, async (req, res) => {
     try {
         const presignedURL = await minioClient.presignedPutObject(bucketName, objectName, 1 * 60 * 60)
 
-        res.json({ presignedURL })
+        res.json({ userID, presignedURL })
     }
     catch (err) {
         console.log(err)
     }
 })
 
-router.get('/get-object', userAuthMiddleware, async (req, res) => {
-    //@ts-ignore
-    const userID = req.userID
-
-    const { filename } = req.query
+router.get('/get-object', async (req, res) => {
+    const { userID, filename } = req.query
     const objectName = `${userID}/${filename}`
 
     try {
