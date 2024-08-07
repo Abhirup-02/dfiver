@@ -129,6 +129,23 @@ router.get('/presignedUrl', userAuthMiddleware, async (req, res) => {
     }
 })
 
+router.get('/get-object', userAuthMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userID = req.userID
+
+    const { filename } = req.query
+    const objectName = `${userID}/${filename}`
+
+    try {
+        const dataStream = await minioClient.getObject(bucketName, objectName)
+
+        dataStream.pipe(res)
+    }
+    catch (err) {
+        console.log(err)
+    }
+})
+
 router.post('/signin', async (req, res) => {
     const { publicKey, signature } = req.body
 
