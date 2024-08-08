@@ -165,12 +165,12 @@ router.get('/next-task', workerAuthMiddleware, async (req, res) => {
 })
 
 router.post('/signin', async (req, res) => {
-    const walletAddress = "C5WU54Azsq7QgNBveKe8SDnaS71c7hr7qtEE7no9R2vj"
+    const { publicKey, signature } = req.body
 
     try {
         const existingWorker = await prismaClient.worker.findFirst({
             where: {
-                address: walletAddress
+                address: publicKey
             }
         })
 
@@ -189,7 +189,7 @@ router.post('/signin', async (req, res) => {
 
                 const worker = await tx.worker.create({
                     data: {
-                        address: walletAddress
+                        address: publicKey
                     }
                 })
 
