@@ -64,7 +64,7 @@ router.get('/task', userAuthMiddleware, async (req, res) => {
         result[r.option_id].count++
     })
 
-    res.json({ result })
+    res.json({ taskDetails, result })
 })
 
 router.post('/task', userAuthMiddleware, async (req, res) => {
@@ -78,6 +78,7 @@ router.post('/task', userAuthMiddleware, async (req, res) => {
             message: "You've sent wrong inputs"
         })
     }
+
 
     //parse the signature here to ensure the person has paid
 

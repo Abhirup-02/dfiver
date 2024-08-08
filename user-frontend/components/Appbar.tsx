@@ -9,17 +9,17 @@ export default function Appbar() {
 
     const { publicKey, signMessage } = useWallet()
 
-    async function signAndSend() {
-        if (!publicKey) return
-
-        // const message = new TextEncoder().encode("Sign into dFiver")
-        // const signature = await signMessage?.(message)
-
-        const token = await userSignIn(publicKey.toString())
-        sessionStorage.setItem("token", token)
-    }
-
     useEffect(() => {
+        async function signAndSend() {
+            if (!publicKey) return
+
+            // const message = new TextEncoder().encode("Sign into dFiver")
+            // const signature = await signMessage?.(message)
+
+            const token = await userSignIn(publicKey.toString())
+            sessionStorage.setItem("token", token)
+        }
+
         signAndSend()
     }, [publicKey])
 

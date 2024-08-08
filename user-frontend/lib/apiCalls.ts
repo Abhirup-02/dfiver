@@ -7,7 +7,10 @@ export async function userSignIn(publicKey: string, signature?: any) {
             body: JSON.stringify({
                 publicKey,
                 signature
-            })
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            }
         })
 
         const data = await res.json()
@@ -54,12 +57,13 @@ export async function createTask(images: Array<string>, title: string, txnSignat
         const res = await fetch(`${API_URL}/task`, {
             method: 'POST',
             body: JSON.stringify({
-                options,
-                title,
-                signature: txnSignature
+                'options': options,
+                'title': title,
+                'signature': txnSignature
             }),
             headers: {
-                "Authorization": token
+                "Authorization": token,
+                'Content-Type': 'application/json'
             }
         })
 
@@ -78,7 +82,7 @@ export async function getTaskDetails(taskID: string) {
     if (!token) return
 
     try {
-        const res = await fetch(`${API_URL}/task?taskId=${taskID}`, {
+        const res = await fetch(`${API_URL}/task?taskID=${taskID}`, {
             headers: {
                 "Authorization": token
             },
