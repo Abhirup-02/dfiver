@@ -13,6 +13,33 @@ const router = Router()
 const prismaClient = new PrismaClient()
 
 
+
+router.get('/all-tasks', userAuthMiddleware, async (req, res) => {
+    //@ts-ignore
+    const userID: string = req.userID
+
+    const tasks = await prismaClient.task.findMany({
+        where: {
+            user_id: Number(userID),
+        },
+        select: {
+            id: true,
+            title: true,
+            amount: true,
+            done: true
+        }
+    })
+
+    if (!tasks) {
+        return res.status(411).json({
+            message: "You don't have access to this task"
+        })
+    }
+
+    res.json({ tasks })
+})
+
+
 router.get('/task', userAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const userID: string = req.userID

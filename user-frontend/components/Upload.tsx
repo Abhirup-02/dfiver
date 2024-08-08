@@ -21,7 +21,7 @@ export default function Upload() {
 
         const taskID = await createTask(images, title, txnSignature)
 
-        router.push(`/task/${taskID}`)
+        router.push(`/tasks/${taskID}`)
     }
 
     // async function makePayment() {

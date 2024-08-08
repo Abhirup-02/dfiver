@@ -4,6 +4,7 @@ import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapte
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 import { userSignIn } from '@/lib/apiCalls';
+import Link from 'next/link';
 
 export default function Appbar() {
 
@@ -25,9 +26,8 @@ export default function Appbar() {
 
     return (
         <div className="flex justify-between items-center px-8 py-4 border-b">
-            <div className="text-2xl">
-                dFiver
-            </div>
+            <span className="text-2xl">dFiver</span>
+            <Link href='/tasks' prefetch={true} className="text-xl hover:text-blue-700">Tasks</Link>
             <div className="">
                 {publicKey
                     ? <WalletDisconnectButton />

@@ -24,14 +24,14 @@ export default function TaskPage({ params: { taskID } }: { params: { taskID: str
     }, [taskID])
 
     return (
-        <div>
+        <>
             <span className='text-2xl pt-20 flex justify-center'>
                 {taskDetails.title}
             </span>
             <div className='flex justify-center gap-6 pt-8'>
                 {Object.keys(result || {}).map((taskID, idx) => <Task key={idx} imageURL={result[taskID].option.imageURL} votes={result[taskID].count} />)}
             </div>
-        </div>
+        </>
     )
 }
 

@@ -103,7 +103,7 @@ router.post('/submission', workerAuthMiddleware, async (req, res) => {
 
     if (parsedBody.success) {
         const task = await getNextTask(Number(workerID))
-        if (!task || task.id !== Number(parsedBody.data.taskID)) {
+        if (!task || task.id !== parsedBody.data.taskID) {
             res.status(411).json({
                 message: 'Incorrect task ID'
             })
@@ -116,8 +116,8 @@ router.post('/submission', workerAuthMiddleware, async (req, res) => {
             const submission = await tx.submission.create({
                 data: {
                     worker_id: workerID,
-                    option_id: Number(parsedBody.data.selection),
-                    task_id: Number(parsedBody.data.taskID),
+                    option_id: parsedBody.data.selection,
+                    task_id: parsedBody.data.taskID,
                     amount
                 }
             })
