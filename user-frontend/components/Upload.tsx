@@ -25,26 +25,33 @@ export default function Upload() {
     }
 
 
-    async function makePayment() {
+    async function makePayment(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault()
 
-        const transaction = new Transaction().add(
-            SystemProgram.transfer({
-                fromPubkey: publicKey!,
-                toPubkey: new PublicKey(process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS!),
-                lamports: 100000000
-            })
-        );
+        try {
+            const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                    fromPubkey: publicKey!,
+                    toPubkey: new PublicKey(process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS!),
+                    lamports: 100000000
+                })
+            )
 
-        const {
-            context: { slot: minContextSlot },
-            value: { blockhash, lastValidBlockHeight }
-        } = await connection.getLatestBlockhashAndContext()
+            const {
+                context: { slot: minContextSlot },
+                value: { blockhash, lastValidBlockHeight }
+            } = await connection.getLatestBlockhashAndContext()
 
-        const signature = await sendTransaction(transaction, connection, { minContextSlot })
+            const signature = await sendTransaction(transaction, connection, { minContextSlot })
+            console.log(signature)
 
-        await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
-        
-        setTxnSignature(signature)
+            await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
+
+            setTxnSignature(signature)
+        }
+        catch (err) {
+            console.log(err)
+        }
     }
 
 
