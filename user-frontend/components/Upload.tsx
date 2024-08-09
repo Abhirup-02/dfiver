@@ -10,44 +10,47 @@ export default function Upload() {
     const router = useRouter()
     const [title, setTitle] = useState('')
     const [images, setImages] = useState<Array<string>>([])
-    const [txnSignature, setTxnSignature] = useState('')
+    const [txnSignature, setTxnSignature] = useState<string>()
 
-    // const { connection } = useConnection()
-    // const { publicKey, sendTransaction } = useWallet()
+    const { connection } = useConnection()
+    const { publicKey, sendTransaction } = useWallet()
 
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
 
-        const taskID = await createTask(images, title, txnSignature)
+        const taskID = await createTask(images, title, txnSignature!)
 
         router.push(`/tasks/${taskID}`)
     }
 
-    // async function makePayment() {
 
-    //     const transaction = new Transaction().add(
-    //         SystemProgram.transfer({
-    //             fromPubkey: publicKey!,
-    //             toPubkey: new PublicKey("2KeovpYvrgpziaDsq8nbNMP4mc48VNBVXb5arbqrg9Cq"),
-    //             lamports: 100000000,
-    //         })
-    //     );
+    async function makePayment() {
 
-    //     const {
-    //         context: { slot: minContextSlot },
-    //         value: { blockhash, lastValidBlockHeight }
-    //     } = await connection.getLatestBlockhashAndContext();
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: publicKey!,
+                toPubkey: new PublicKey(process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS!),
+                lamports: 100000000
+            })
+        );
 
-    //     const signature = await sendTransaction(transaction, connection, { minContextSlot });
+        const {
+            context: { slot: minContextSlot },
+            value: { blockhash, lastValidBlockHeight }
+        } = await connection.getLatestBlockhashAndContext()
 
-    //     await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature });
-    //     setTxnSignature(signature);
-    // }
+        const signature = await sendTransaction(transaction, connection, { minContextSlot })
+
+        await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
+        setTxnSignature(signature)
+    }
+
+
 
     return (
         <div className='flex justify-center'>
-            <form onSubmit={handleSubmit} className="max-w-screen-lg w-full py-14 px-18 flex flex-col">
+            <form onSubmit={txnSignature ? handleSubmit : makePayment} className="max-w-screen-lg w-full py-14 px-18 flex flex-col">
 
                 <span className="text-2xl">Create a task</span>
 
@@ -79,7 +82,12 @@ export default function Upload() {
                         setImages((prev) => [...prev, imageUrl])
                     }} />
 
-                    <button type="submit" className="w-32 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-xl text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Submit Task</button>
+                    <button
+                        type="submit"
+                        className="w-32 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-xl text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                    >
+                        {txnSignature ? 'Submit Task' : 'Pay 0.1 SOL'}
+                    </button>
                 </div>
 
             </form>

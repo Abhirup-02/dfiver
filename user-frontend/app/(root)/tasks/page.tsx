@@ -41,11 +41,11 @@ export default function AllTasks() {
     }
 
     return (
-        <div className="flex flex-flex-wrap gap-10 items-center px-20 py-14">
+        <div className="flex flex-wrap gap-10 items-center px-16 py-14">
             {allTasks.map((task) => (
                 <div
                     key={task.id}
-                    className="flex flex-col gap-4 items-center rounded-lg border-2 border-white p-6 cursor-pointer transition duration-300 ease-in-out hover:bg-slate-500"
+                    className="flex flex-col gap-5 items-center rounded-xl border-2 border-white p-10 cursor-pointer transition duration-300 ease-in-out hover:bg-slate-500"
                     onClick={() => router.push(`/tasks/${task.id}`)}
                 >
                     <span className='text-2xl'>

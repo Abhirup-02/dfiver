@@ -12,13 +12,20 @@ export default function Appbar() {
 
     useEffect(() => {
         async function signAndSend() {
-            if (!publicKey) return
+            if (sessionStorage.getItem('token')) return
+            if(!publicKey) return
 
-            // const message = new TextEncoder().encode("Sign into dFiver")
-            // const signature = await signMessage?.(message)
+            try {
+                const message = new TextEncoder().encode(`Sign into dFiver on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
+                const signature = await signMessage?.(message)
 
-            const token = await userSignIn(publicKey.toString())
-            sessionStorage.setItem("token", token)
+                if (!signature) return
+
+                await userSignIn(publicKey.toString(), signature)
+            }
+            catch (err) {
+                console.log(err)
+            }
         }
 
         signAndSend()
@@ -30,7 +37,7 @@ export default function Appbar() {
             <Link href='/tasks' prefetch={true} className="text-xl hover:text-blue-700">Tasks</Link>
             <div className="">
                 {publicKey
-                    ? <WalletDisconnectButton />
+                    ? <WalletDisconnectButton onClick={() => sessionStorage.removeItem('token')} />
                     : <WalletMultiButton />
                 }
             </div>

@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL as string
 
-export async function userSignIn(publicKey: string, signature?: any) {
+export async function userSignIn(publicKey: string, signature: any) {
     try {
         const res = await fetch(`${API_URL}/signin`, {
             method: 'POST',
@@ -15,7 +15,7 @@ export async function userSignIn(publicKey: string, signature?: any) {
 
         const data = await res.json()
 
-        return data.token
+        sessionStorage.setItem('token', data.token)
     }
     catch (err) {
         console.error(err)

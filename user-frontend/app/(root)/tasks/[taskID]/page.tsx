@@ -1,4 +1,5 @@
 'use client'
+import Loader from '@/components/Loader';
 import { getTaskDetails } from '@/lib/apiCalls';
 import { rgbDataURL } from '@/lib/blurryImage';
 import Image from 'next/image';
@@ -14,14 +15,32 @@ export default function TaskPage({ params: { taskID } }: { params: { taskID: str
     }>>({})
 
     const [taskDetails, setTaskDetails] = useState<{ title?: string }>({})
+    const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
+
+    async function fetchData() {
         getTaskDetails(taskID)
             .then((data) => {
                 setResult(data.result)
                 setTaskDetails(data.taskDetails)
+                setLoading(false)
             })
+            .catch((e) => {
+                setLoading(false)
+            })
+    }
+
+    useEffect(() => {
+        fetchData()
+        const interval = setInterval(() => fetchData(), 5000)
+
+        return () => clearInterval(interval)
     }, [taskID])
+
+
+    if (loading) {
+        return <Loader bgHeight="80vh" height="4rem" width="4rem" color="#ffffff" />
+    }
 
     return (
         <>

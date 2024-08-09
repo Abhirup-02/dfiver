@@ -1,5 +1,7 @@
-import { Router } from "express";
 import jwt from 'jsonwebtoken'
+import nacl from 'tweetnacl'
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Router } from "express";
 import { PrismaClient } from '@prisma/client'
 import { bucketName, minioClient } from "../lib/store";
 import { userAuthMiddleware } from "../middleware";
@@ -7,6 +9,7 @@ import { createTaskInput } from "../types";
 import { TOTAL_DECIMALS } from "../config";
 
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!
+const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS!
 const DEFAULT_TITLE = "Select the most clickable thumbnail"
 
 const router = Router()
@@ -174,7 +177,20 @@ router.get('/get-object', async (req, res) => {
 router.post('/signin', async (req, res) => {
     const { publicKey, signature } = req.body
 
-    // verify signature
+    const message = new TextEncoder().encode(`Sign into dFiver on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
+
+    const result = nacl.sign.detached.verify(
+        message,
+        new Uint8Array(signature.data),
+        new PublicKey(publicKey).toBytes()
+    )
+
+    if (!result) {
+        return res.status(411).json({
+            message: 'Incorrect signature'
+        })
+    }
+
 
     try {
         const existingUser = await prismaClient.user.findFirst({

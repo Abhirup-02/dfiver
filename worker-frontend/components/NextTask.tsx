@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import Loader from "./Loader"
 import Image from "next/image"
 import { rgbDataURL } from "@/lib/blurryImage"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 interface Task {
     id: number,
@@ -19,8 +20,11 @@ interface Task {
 
 export default function NextTask() {
 
+    const { publicKey } = useWallet()
+
     const [currentTask, setCurrentTask] = useState<Task | null>(null)
     const [loading, setLoading] = useState(true)
+    const [submitting, setSubmitting] = useState(false)
 
     useEffect(() => {
         nextTask()
@@ -31,11 +35,19 @@ export default function NextTask() {
             .catch((e) => {
                 setLoading(false)
             })
-    }, [])
+    }, [publicKey])
+
 
 
     if (loading) {
         return <Loader bgHeight="80vh" height="4rem" width="4rem" color="#ffffff" />
+    }
+    else if (!publicKey) {
+        return (
+            <div className="flex justify-center items-center h-[80vh] text-2xl">
+                Please Login to check tasks
+            </div>
+        )
     }
     else if (!currentTask) {
         return (
@@ -50,12 +62,13 @@ export default function NextTask() {
             <span className='text-2xl pt-20 flex justify-center'>
                 {currentTask.title}
             </span>
-            <div className='flex justify-center gap-6 pt-8'>
+            <div className='flex justify-center gap-6 py-8'>
                 {currentTask.options.map((option, idx) =>
                     <Option
                         key={idx}
                         imageURL={option.image_url}
                         onSelect={async () => {
+                            setSubmitting(true)
                             const data = await submission(currentTask.id, option.id)
 
                             const nextTask = data.nextTask
@@ -65,11 +78,13 @@ export default function NextTask() {
                             else {
                                 setCurrentTask(null)
                             }
+                            setSubmitting(false)
 
                             // Refresh the user balance in the appbar
                         }}
                     />)}
             </div>
+            {submitting && <span className="text-xl pt-20 flex justify-center">Submitting...</span>}
         </>
     )
 }
@@ -81,7 +96,7 @@ function Option({ imageURL, onSelect }: {
     return (
         <div className='flex flex-col items-center gap-2'>
             <Image
-                className="rounded-md cursor-pointer opacity-100 transition duration-300 ease-in-out hover:opacity-60"
+                className="rounded-md cursor-pointer opacity-100 transition duration-300 ease-in-out hover:opacity-50"
                 src={imageURL}
                 width={400}
                 height={300}

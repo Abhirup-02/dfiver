@@ -13,11 +13,17 @@ export default function Appbar() {
         async function signAndSend() {
             if (!publicKey) return
 
-            // const message = new TextEncoder().encode("Sign into dFiver")
-            // const signature = await signMessage?.(message)
+            try {
+                const message = new TextEncoder().encode(`Sign into dFiver on ${new Date()}`)
+                const signature = await signMessage?.(message)
 
-            const token = await workerSignIn(publicKey.toString())
-            sessionStorage.setItem("token", token)
+                if (!signature) return
+
+                await workerSignIn(publicKey.toString(), signature)
+            }
+            catch (err) {
+                console.log(err)
+            }
         }
 
         signAndSend()
@@ -30,7 +36,7 @@ export default function Appbar() {
             </div>
             <div className="">
                 {publicKey
-                    ? <WalletDisconnectButton />
+                    ? <WalletDisconnectButton onClick={() => sessionStorage.removeItem('token')} />
                     : <WalletMultiButton />
                 }
             </div>
