@@ -43,7 +43,6 @@ export default function Upload() {
             } = await connection.getLatestBlockhashAndContext()
 
             const signature = await sendTransaction(transaction, connection, { minContextSlot })
-            console.log(signature)
 
             await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
 
