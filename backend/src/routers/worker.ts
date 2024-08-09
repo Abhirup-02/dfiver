@@ -1,6 +1,8 @@
+import jwt from 'jsonwebtoken'
+import nacl from 'tweetnacl'
+import { PublicKey } from "@solana/web3.js";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
-import jwt from 'jsonwebtoken'
 import { workerAuthMiddleware } from "../middleware";
 import { getNextTask } from "../db";
 import { createSubmissionInput } from "../types";
@@ -166,6 +168,20 @@ router.get('/next-task', workerAuthMiddleware, async (req, res) => {
 
 router.post('/signin', async (req, res) => {
     const { publicKey, signature } = req.body
+
+    const message = new TextEncoder().encode(`Sign into dFiver as a worker on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
+
+    const result = nacl.sign.detached.verify(
+        message,
+        new Uint8Array(signature.data),
+        new PublicKey(publicKey).toBytes()
+    )
+
+    if (!result) {
+        return res.status(411).json({
+            message: 'Incorrect signature'
+        })
+    }
 
     try {
         const existingWorker = await prismaClient.worker.findFirst({

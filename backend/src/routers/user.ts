@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
 import nacl from 'tweetnacl'
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey } from "@solana/web3.js";
 import { Router } from "express";
 import { PrismaClient } from '@prisma/client'
 import { bucketName, minioClient } from "../lib/store";

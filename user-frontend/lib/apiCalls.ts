@@ -1,6 +1,6 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL as string
 
-export async function userSignIn(publicKey: string, signature: any) {
+export async function userSignIn(publicKey: string, signature: Uint8Array) {
     try {
         const res = await fetch(`${API_URL}/signin`, {
             method: 'POST',

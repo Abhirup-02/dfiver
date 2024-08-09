@@ -11,10 +11,11 @@ export default function Appbar() {
 
     useEffect(() => {
         async function signAndSend() {
+            if (sessionStorage.getItem('token')) return
             if (!publicKey) return
 
             try {
-                const message = new TextEncoder().encode(`Sign into dFiver on ${new Date()}`)
+                const message = new TextEncoder().encode(`Sign into dFiver as a worker on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
                 const signature = await signMessage?.(message)
 
                 if (!signature) return
