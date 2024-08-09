@@ -43,6 +43,7 @@ export default function Upload() {
         const signature = await sendTransaction(transaction, connection, { minContextSlot })
 
         await connection.confirmTransaction({ blockhash, lastValidBlockHeight, signature })
+        
         setTxnSignature(signature)
     }
 

@@ -10,7 +10,9 @@ import { TOTAL_DECIMALS } from "../config";
 
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!
 const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS!
-const DEFAULT_TITLE = "Select the most clickable thumbnail"
+const connection = new Connection(process.env.SOLANA_RPC_URL!)
+
+declare const DEFAULT_TITLE = "Select the most clickable thumbnail"
 
 const router = Router()
 const prismaClient = new PrismaClient()
@@ -110,7 +112,55 @@ router.post('/task', userAuthMiddleware, async (req, res) => {
     }
 
 
-    //parse the signature here to ensure the person has paid
+
+    try {
+        const user = await prismaClient.user.findFirst({
+            where: {
+                id: userID
+            }
+        })
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' })
+        }
+        else {
+            const transaction = await connection.getTransaction(parseData.data.signature, {
+                maxSupportedTransactionVersion: 1
+            })
+
+            if (transaction && transaction.meta && transaction.transaction) {
+
+                if ((transaction.meta.postBalances[1] ?? 0) - (transaction.meta.preBalances[1] ?? 0) !== 0.1 * TOTAL_DECIMALS) {
+                    return res.status(411).json({
+                        message: 'Transaction signature/amount incorrect'
+                    })
+                }
+
+                if (transaction.transaction.message.getAccountKeys().get(1)?.toString() !== PARENT_WALLET_ADDRESS) {
+                    return res.status(411).json({
+                        message: 'Transaction sent to wrong address'
+                    })
+                }
+
+                if (transaction.transaction.message.getAccountKeys().get(0)?.toString() !== user.address) {
+                    return res.status(411).json({
+                        message: 'Transaction came from wrong address'
+                    })
+                }
+                // const transaction = Transaction.from(parseData.data.signature);
+            }
+            else {
+                console.log('Transaction is not valid');
+            }
+        }
+
+    }
+    catch (err) {
+        console.log(err)
+    }
+
+
+
 
     try {
         const response = await prismaClient.$transaction(async (tx) => {
@@ -119,7 +169,7 @@ router.post('/task', userAuthMiddleware, async (req, res) => {
                 data: {
                     title: parseData.data.title ?? DEFAULT_TITLE,
                     signature: parseData.data.signature,
-                    amount: 1 * TOTAL_DECIMALS,
+                    amount: 0.1 * TOTAL_DECIMALS,
                     user_id: userID
                 }
             })
