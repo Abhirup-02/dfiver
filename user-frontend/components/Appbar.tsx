@@ -5,9 +5,10 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
 import { userSignIn } from '@/lib/apiCalls';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function Appbar() {
-
+    const router = useRouter()
     const { publicKey, signMessage } = useWallet()
 
     useEffect(() => {
@@ -37,7 +38,10 @@ export default function Appbar() {
             <Link href='/tasks' prefetch={true} className="text-xl hover:text-blue-700">Tasks</Link>
             <div className="">
                 {publicKey
-                    ? <WalletDisconnectButton onClick={() => sessionStorage.removeItem('token')} />
+                    ? <WalletDisconnectButton onClick={() => {
+                        sessionStorage.removeItem('token')
+                        router.push('/')
+                    }} />
                     : <WalletMultiButton />
                 }
             </div>
