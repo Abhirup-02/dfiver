@@ -22,71 +22,70 @@ export default function NextTask() {
 
     const { publicKey } = useWallet()
 
-    const [currentTask, setCurrentTask] = useState<Task | null>(null)
-    const [loading, setLoading] = useState(true)
+    const [currentTask, setCurrentTask] = useState<Task | null>()
     const [submitting, setSubmitting] = useState(false)
+
 
     useEffect(() => {
         nextTask()
             .then((data) => {
                 setCurrentTask(data)
-                setLoading(false)
             })
             .catch((e) => {
-                setLoading(false)
+                console.log(e)
             })
-    }, [publicKey])
+    }, [])
 
 
-
-    if (loading) {
-        return <Loader bgHeight="80vh" height="4rem" width="4rem" color="#ffffff" />
-    }
-    else if (!publicKey) {
+    if (!publicKey) {
         return (
             <div className="flex justify-center items-center h-[80vh] text-2xl">
                 Please Login to check tasks
             </div>
         )
     }
-    else if (!currentTask) {
+    else if (currentTask === null) {
         return (
             <div className="flex justify-center items-center h-[80vh] text-2xl">
                 Please check back later, there are no pending tasks at this moment
             </div>
         )
     }
+    else if (currentTask !== null && currentTask !== undefined) {
+        return (
+            <>
+                <span className='text-2xl pt-20 flex justify-center'>
+                    {currentTask.title}
+                </span>
+                <div className='flex justify-center gap-6 py-8'>
+                    {currentTask.options.map((option, idx) =>
+                        <Option
+                            key={idx}
+                            imageURL={option.image_url}
+                            onSelect={async () => {
+                                setSubmitting(true)
+                                const data = await submission(currentTask.id, option.id)
 
-    return (
-        <>
-            <span className='text-2xl pt-20 flex justify-center'>
-                {currentTask.title}
-            </span>
-            <div className='flex justify-center gap-6 py-8'>
-                {currentTask.options.map((option, idx) =>
-                    <Option
-                        key={idx}
-                        imageURL={option.image_url}
-                        onSelect={async () => {
-                            setSubmitting(true)
-                            const data = await submission(currentTask.id, option.id)
+                                const nextTask = data.nextTask
+                                if (nextTask) {
+                                    setCurrentTask(nextTask)
+                                }
+                                else {
+                                    setCurrentTask(null)
+                                }
+                                setSubmitting(false)
 
-                            const nextTask = data.nextTask
-                            if (nextTask) {
-                                setCurrentTask(nextTask)
-                            }
-                            else {
-                                setCurrentTask(null)
-                            }
-                            setSubmitting(false)
-
-                            // Refresh the user balance in the appbar
-                        }}
-                    />)}
-            </div>
-            {submitting && <span className="text-xl pt-20 flex justify-center">Submitting...</span>}
-        </>
-    )
+                                // Refresh the user balance in the appbar
+                            }}
+                        />)}
+                </div>
+                {submitting && <span className="text-xl pt-20 flex justify-center">Submitting...</span>}
+            </>
+        )
+    }
+    else {
+        return <Loader bgHeight="80vh" height="4rem" width="4rem" color="#ffffff" />
+    }
 }
 
 function Option({ imageURL, onSelect }: {

@@ -1,17 +1,17 @@
 'use client'
 
-import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { WalletMultiButton, WalletDisconnectButton } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { useEffect } from 'react';
-import { workerSignIn } from '@/lib/apiCalls';
+import { useEffect, useState } from 'react';
+import { getBalance, logout, workerSignIn } from '@/lib/apiCalls';
 
 export default function Appbar() {
 
     const { publicKey, signMessage } = useWallet()
+    const [balance, setBalance] = useState(0)
 
     useEffect(() => {
         async function signAndSend() {
-            if (sessionStorage.getItem('token')) return
             if (!publicKey) return
 
             try {
@@ -35,9 +35,20 @@ export default function Appbar() {
             <div className="text-2xl">
                 dFiver
             </div>
-            <div className="">
+            <div className="flex gap-4 items-center">
+                {publicKey &&
+                    <button
+                        className="h-[60%] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-md text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                        onClick={getBalance}
+                    >
+                        Pay me out
+                    </button>
+                }
+
                 {publicKey
-                    ? <WalletDisconnectButton onClick={() => sessionStorage.removeItem('token')} />
+                    ? <WalletDisconnectButton onClick={async () => {
+                        await logout()
+                    }} />
                     : <WalletMultiButton />
                 }
             </div>

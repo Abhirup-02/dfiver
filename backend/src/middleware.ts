@@ -5,15 +5,17 @@ const USER_JWT_SECRET = process.env.USER_JWT_SECRET!
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!
 
 export function userAuthMiddleware(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'] ?? ''
+
+    const sessionCookie = req.session!['dFiver'] ?? ''
 
     try {
-        const decoded = jwt.verify(authHeader, USER_JWT_SECRET)
+        const decoded = jwt.verify(sessionCookie, USER_JWT_SECRET)
         //@ts-ignore
         if (decoded.userID) {
             //@ts-ignore
             req.userID = decoded.userID
-            return next()
+
+            next()
         }
         else {
             res.status(403).json({
@@ -30,15 +32,17 @@ export function userAuthMiddleware(req: Request, res: Response, next: NextFuncti
 
 
 export function workerAuthMiddleware(req: Request, res: Response, next: NextFunction) {
-    const authHeader = req.headers['authorization'] ?? ''
+
+    const sessionCookie = req.session!['dFiver'] ?? ''
 
     try {
-        const decoded = jwt.verify(authHeader, WORKER_JWT_SECRET)
+        const decoded = jwt.verify(sessionCookie, WORKER_JWT_SECRET)
         //@ts-ignore
         if (decoded.workerID) {
             //@ts-ignore
             req.workerID = decoded.workerID
-            return next()
+
+            next()
         }
         else {
             res.status(403).json({

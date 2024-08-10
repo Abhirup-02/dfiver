@@ -9,13 +9,30 @@ export async function userSignIn(publicKey: string, signature: Uint8Array) {
                 signature
             }),
             headers: {
-                'Content-Type': 'application/json'
-            }
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include'
         })
 
         const data = await res.json()
 
-        sessionStorage.setItem('token', data.token)
+        return data.message
+    }
+    catch (err) {
+        console.error(err)
+    }
+}
+
+
+export async function logout() {
+    try {
+        const res = await fetch(`${API_URL}/logout`, {            
+            credentials: 'include'
+        })
+
+        const data = await res.json()
+
+        return data.message
     }
     catch (err) {
         console.error(err)
@@ -24,14 +41,9 @@ export async function userSignIn(publicKey: string, signature: Uint8Array) {
 
 
 export async function getPresignedURL(filename: string) {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
-
     try {
         const res = await fetch(`${API_URL}/presignedUrl?filename=${filename}`, {
-            headers: {
-                "Authorization": token
-            },
+            credentials: 'include'
         })
 
         const data = await res.json()
@@ -45,8 +57,6 @@ export async function getPresignedURL(filename: string) {
 
 
 export async function createTask(images: Array<string>, title: string, txnSignature: string) {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
 
     const options = images.map((image) => ({
         imageURL: image
@@ -61,9 +71,9 @@ export async function createTask(images: Array<string>, title: string, txnSignat
                 signature: txnSignature
             }),
             headers: {
-                "Authorization": token,
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
         })
 
         const data = await res.json()
@@ -77,14 +87,9 @@ export async function createTask(images: Array<string>, title: string, txnSignat
 
 
 export async function getAllTasks() {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
-
     try {
         const res = await fetch(`${API_URL}/all-tasks`, {
-            headers: {
-                "Authorization": token
-            },
+            credentials: 'include'
         })
 
         const data = await res.json()
@@ -98,14 +103,9 @@ export async function getAllTasks() {
 
 
 export async function getTaskDetails(taskID: string) {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
-
     try {
         const res = await fetch(`${API_URL}/task?taskID=${taskID}`, {
-            headers: {
-                "Authorization": token
-            },
+            credentials: 'include'
         })
 
         const data = await res.json()

@@ -10,53 +10,8 @@ export async function workerSignIn(publicKey: string, signature: Uint8Array) {
             }),
             headers: {
                 'Content-Type': 'application/json'
-            }
-        })
-
-        const data = await res.json()
-
-        sessionStorage.setItem('token', data.token)
-    }
-    catch (err) {
-        console.error(err)
-    }
-}
-
-export async function nextTask() {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
-
-    try {
-        const res = await fetch(`${API_URL}/next-task`, {
-            headers: {
-                'Authorization': token
-            }
-        })
-
-        const data = await res.json()
-
-        return data.task
-    }
-    catch (err) {
-        console.error(err)
-    }
-}
-
-export async function submission(taskID: number, selection: number) {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
-
-    try {
-        const res = await fetch(`${API_URL}/submission`, {
-            method: 'POST',
-            body: JSON.stringify({
-                taskID,
-                selection
-            }),
-            headers: {
-                'Authorization': token,
-                'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
         })
 
         const data = await res.json()
@@ -68,15 +23,67 @@ export async function submission(taskID: number, selection: number) {
     }
 }
 
-export async function balance() {
-    const token = sessionStorage.getItem("token")
-    if (!token) return
 
+export async function logout() {
+    try {
+        const res = await fetch(`${API_URL}/logout`, {
+            credentials: 'include'
+        })
+
+        const data = await res.json()
+
+        return data.message
+    }
+    catch (err) {
+        console.error(err)
+    }
+}
+
+
+export async function nextTask() {
+    try {
+        const res = await fetch(`${API_URL}/next-task`, {
+            credentials: 'include'
+        })
+
+        const data = await res.json()
+
+        return data.task
+    }
+    catch (err) {
+        console.error(err)
+    }
+}
+
+
+export async function submission(taskID: number, selection: number) {
+    try {
+        const res = await fetch(`${API_URL}/submission`, {
+            method: 'POST',
+            body: JSON.stringify({
+                taskID,
+                selection
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        })
+
+        const data = await res.json()
+
+        return data
+    }
+    catch (err) {
+        console.error(err)
+    }
+}
+
+
+export async function getBalance() {
     try {
         const res = await fetch(`${API_URL}/balance`, {
-            headers: {
-                'Authorization': token
-            }
+            credentials: 'include'
         })
 
         const data = await res.json()

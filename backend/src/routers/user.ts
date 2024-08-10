@@ -250,14 +250,15 @@ router.post('/signin', async (req, res) => {
         })
 
         if (existingUser) {
-            const token = jwt.sign({            // send JWT token in cookies
+            const token = jwt.sign({
                 userID: existingUser.id
             },
                 USER_JWT_SECRET,
                 { expiresIn: '1d' }
             )
 
-            return res.json({ token })
+            req.session!.dFiver = token
+            res.json({ message: 'Logged In' })
         }
         else {
             const user = await prismaClient.user.create({
@@ -273,12 +274,18 @@ router.post('/signin', async (req, res) => {
                 { expiresIn: '1d' }
             )
 
-            return res.json({ token })
+            req.session!.dFiver = token
+            res.json({ message: 'Logged In' })
         }
     }
     catch (err) {
-        console.log(err);
+        console.log(err)
     }
+})
+
+router.get('/logout', async (req, res) => {
+    req.session = null
+    res.json({ message: 'Logged Out' })
 })
 
 export default router

@@ -3,7 +3,7 @@
 import { WalletDisconnectButton, WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect } from 'react';
-import { userSignIn } from '@/lib/apiCalls';
+import { logout, userSignIn } from '@/lib/apiCalls';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -13,8 +13,7 @@ export default function Appbar() {
 
     useEffect(() => {
         async function signAndSend() {
-            if (sessionStorage.getItem('token')) return
-            if(!publicKey) return
+            if (!publicKey) return
 
             try {
                 const message = new TextEncoder().encode(`Sign into dFiver on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
@@ -38,8 +37,8 @@ export default function Appbar() {
             <Link href='/tasks' prefetch={true} className="text-xl hover:text-blue-700">Tasks</Link>
             <div className="">
                 {publicKey
-                    ? <WalletDisconnectButton onClick={() => {
-                        sessionStorage.removeItem('token')
+                    ? <WalletDisconnectButton onClick={async () => {
+                        await logout()
                         router.push('/')
                     }} />
                     : <WalletMultiButton />

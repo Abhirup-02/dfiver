@@ -187,6 +187,9 @@ router.post('/signin', async (req, res) => {
         const existingWorker = await prismaClient.worker.findFirst({
             where: {
                 address: publicKey
+            },
+            include: {
+                balance: true
             }
         })
 
@@ -198,7 +201,8 @@ router.post('/signin', async (req, res) => {
                 { expiresIn: '1d' }
             )
 
-            return res.json({ token })
+            req.session!.dFiver = token
+            res.json({ message: 'Logged In', amount: existingWorker.balance?.pending_amount })
         }
         else {
             const worker = await prismaClient.$transaction(async (tx) => {
@@ -227,12 +231,18 @@ router.post('/signin', async (req, res) => {
                 { expiresIn: '1d' }
             )
 
-            return res.json({ token })
+            req.session!.dFiver = token
+            res.json({ message: 'Logged In', amount: 0 })
         }
     }
     catch (err) {
         console.log(err);
     }
+})
+
+router.get('/logout', async (req, res) => {
+    req.session = null
+    res.json({ message: 'Logged Out' })
 })
 
 export default router
