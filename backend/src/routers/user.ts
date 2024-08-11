@@ -1,16 +1,14 @@
 import jwt from 'jsonwebtoken'
 import nacl from 'tweetnacl'
-import { Connection, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import { Router } from "express";
 import { PrismaClient } from '@prisma/client'
 import { bucketName, minioClient } from "../lib/store";
 import { userAuthMiddleware } from "../middleware";
 import { createTaskInput } from "../types";
-import { TOTAL_DECIMALS } from "../config";
+import { connection, PARENT_WALLET_ADDRESS, TOTAL_DECIMALS } from "../config";
 
 const USER_JWT_SECRET = process.env.USER_JWT_SECRET!
-const PARENT_WALLET_ADDRESS = process.env.PARENT_WALLET_ADDRESS!
-const connection = new Connection(process.env.SOLANA_RPC_URL!)
 
 declare const DEFAULT_TITLE = "Select the most clickable thumbnail"
 
@@ -132,7 +130,7 @@ router.post('/task', userAuthMiddleware, async (req, res) => {
 
                 if ((transaction.meta.postBalances[1] ?? 0) - (transaction.meta.preBalances[1] ?? 0) !== 0.1 * TOTAL_DECIMALS) {
                     return res.status(411).json({
-                        message: 'Transaction signature/amount incorrect'
+                        message: 'Transaction amount incorrect'
                     })
                 }
 

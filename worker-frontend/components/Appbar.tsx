@@ -28,7 +28,13 @@ export default function Appbar() {
             }
         }
 
+        async function payOut() {
+            const amount = await getBalance()
+            setBalance(amount)
+        }
+
         signAndSend()
+        payOut()
     }, [publicKey])
 
     return (
@@ -42,7 +48,7 @@ export default function Appbar() {
                         className="h-[60%] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-md text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                         onClick={getBalance}
                     >
-                        Pay me out
+                        Pay me out ({balance}) SOL
                     </button>
                 }
 

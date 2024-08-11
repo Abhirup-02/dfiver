@@ -1,12 +1,13 @@
+import bs58 from "bs58";
 import jwt from 'jsonwebtoken'
 import nacl from 'tweetnacl'
-import { PublicKey } from "@solana/web3.js";
+import { Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { workerAuthMiddleware } from "../middleware";
 import { getNextTask } from "../db";
 import { createSubmissionInput } from "../types";
-import { TOTAL_SUBMISSIONS } from "../config";
+import { connection, LAMPORT, PARENT_WALLET_ADDRESS, PARENT_WALLET_PRIVATE_KEY, TOTAL_DECIMALS, TOTAL_SUBMISSIONS } from "../config";
 
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!
 
@@ -30,8 +31,8 @@ router.get('/balance', workerAuthMiddleware, async (req, res) => {
     }
     else {
         res.json({
-            pendingAmount: workerBalance.pending_amount,
-            lockedAmount: workerBalance.locked_amount
+            pendingAmount: workerBalance.pending_amount / TOTAL_DECIMALS,
+            lockedAmount: workerBalance.locked_amount / TOTAL_DECIMALS
         })
     }
 })
@@ -56,13 +57,22 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
         })
     }
 
-    const address = worker.address
-    const txnID = '0x682764876284'
-    // new Transaction on solana @solana/web3.js
-    // new Transaction(from, to)
 
+    const transaction = new Transaction().add(
+        SystemProgram.transfer({
+            fromPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
+            toPubkey: new PublicKey(worker.address),
+            lamports: LAMPORT * (worker.balance?.pending_amount! / TOTAL_DECIMALS)
+        })
+    )
 
-    // Lock the specific balance row corresponds to worker
+    const keypair = Keypair.fromSecretKey(bs58.decode(PARENT_WALLET_PRIVATE_KEY))
+
+    const signature = await sendAndConfirmTransaction(connection, transaction, [keypair])
+
+    console.log(signature)
+
+    // If transaction succeeds and then the server fails, so DB entry doesn't happen, then user owe them money again. Better approach is add the payout request to a queue and process it asynchronously
     await prismaClient.$transaction(async (tx) => {
         await tx.balance.update({
             where: {
@@ -83,7 +93,7 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
                 user_id: workerID,
                 amount: worker.balance?.pending_amount!,
                 status: 'Processing',
-                signature: txnID
+                signature
             }
         })
     })
@@ -187,9 +197,6 @@ router.post('/signin', async (req, res) => {
         const existingWorker = await prismaClient.worker.findFirst({
             where: {
                 address: publicKey
-            },
-            include: {
-                balance: true
             }
         })
 
@@ -202,7 +209,7 @@ router.post('/signin', async (req, res) => {
             )
 
             req.session!.dFiver = token
-            res.json({ message: 'Logged In', amount: existingWorker.balance?.pending_amount })
+            res.json({ message: 'Logged In' })
         }
         else {
             const worker = await prismaClient.$transaction(async (tx) => {
@@ -232,7 +239,7 @@ router.post('/signin', async (req, res) => {
             )
 
             req.session!.dFiver = token
-            res.json({ message: 'Logged In', amount: 0 })
+            res.json({ message: 'Logged In' })
         }
     }
     catch (err) {

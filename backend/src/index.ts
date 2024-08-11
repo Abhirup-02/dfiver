@@ -4,10 +4,12 @@ import workerRouter from './routers/worker'
 import cors from 'cors'
 import morgan from 'morgan'
 import cookieSession from 'cookie-session'
+import { createServer } from 'node:http'
 
 process.loadEnvFile()
 
 const app = express()
+const httpServer = createServer(app)
 
 app.use(express.json())
 app.use(cors({
@@ -30,6 +32,6 @@ app.use('/v1/user', userRouter)
 app.use('/v1/worker', workerRouter)
 
 const port = 8000
-app.listen(port, () => {
+httpServer.listen(port, () => {
     console.log(`Server PORT : ${port}`)
 })
