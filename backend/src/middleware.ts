@@ -6,7 +6,11 @@ const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!
 
 export function userAuthMiddleware(req: Request, res: Response, next: NextFunction) {
 
-    const sessionCookie = req.session!['dFiver'] ?? ''
+    if (!req.session) return res.status(401).json({
+        message: 'Session Invalid'
+    })
+
+    const sessionCookie = req.session['dFiver'] ?? ''
 
     try {
         const decoded = jwt.verify(sessionCookie, USER_JWT_SECRET)

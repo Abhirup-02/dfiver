@@ -16,7 +16,7 @@ export async function userSignIn(publicKey: string, signature: Uint8Array) {
 
         const data = await res.json()
 
-        return data.message
+        sessionStorage.setItem('logged', data.message)
     }
     catch (err) {
         console.error(err)

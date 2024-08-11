@@ -13,6 +13,7 @@ export default function Appbar() {
 
     useEffect(() => {
         async function signAndSend() {
+            if (sessionStorage.getItem('logged')) return
             if (!publicKey) return
 
             try {
@@ -39,6 +40,7 @@ export default function Appbar() {
                 {publicKey
                     ? <WalletDisconnectButton onClick={async () => {
                         await logout()
+                        sessionStorage.removeItem('logged')
                         router.push('/')
                     }} />
                     : <WalletMultiButton />
