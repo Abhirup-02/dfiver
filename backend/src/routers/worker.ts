@@ -70,8 +70,6 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
 
     const signature = await sendAndConfirmTransaction(connection, transaction, [keypair])
 
-    console.log(signature)
-
     // If transaction succeeds and then the server fails, so DB entry doesn't happen, then user owe them money again. Better approach is add the payout request to a queue and process it asynchronously
     await prismaClient.$transaction(async (tx) => {
         await tx.balance.update({
@@ -102,7 +100,7 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
 
     res.json({
         message: "Processing Payout",
-        amount: worker.balance?.pending_amount
+        amount: `${worker.balance?.pending_amount! / TOTAL_DECIMALS} SOL`
     })
 })
 

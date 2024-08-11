@@ -96,4 +96,19 @@ export async function getBalance() {
 }
 
 
+export async function payout() {
+    try {
+        const res = await fetch(`${API_URL}/payout`, {
+            method: 'POST',
+            credentials: 'include'
+        })
+
+        const data = await res.json()
+
+        console.log(data)
+    }
+    catch (err) {
+        console.error(err)
+    }
+}
 

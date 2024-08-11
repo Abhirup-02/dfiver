@@ -47,7 +47,7 @@ export default function TaskPage({ params: { taskID } }: { params: { taskID: str
             <span className='text-2xl pt-20 flex justify-center'>
                 {taskDetails.title}
             </span>
-            <div className='flex justify-center gap-6 pt-8'>
+            <div className='w-full flex flexflex-wrap justify-center gap-6 pt-8 px-12'>
                 {Object.keys(result || {}).map((taskID, idx) => <Task key={idx} imageURL={result[taskID].option.imageURL} votes={result[taskID].count} />)}
             </div>
         </>
@@ -65,6 +65,7 @@ function Task({ imageURL, votes }: { imageURL: string; votes: number; }) {
                 alt='task-image'
                 placeholder='blur'
                 blurDataURL={rgbDataURL(128, 128, 128)}
+                unoptimized
             />
             <span className='text-xl'>{votes}</span>
         </div>

@@ -1,3 +1,6 @@
+-- CreateEnum
+CREATE TYPE "TxnStatus" AS ENUM ('Processing', 'Success', 'Failure');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -27,10 +30,11 @@ CREATE TABLE "Balance" (
 -- CreateTable
 CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
-    "title" TEXT NOT NULL DEFAULT 'Select the most clickable thumbnail',
+    "title" TEXT DEFAULT 'Select the most clickable thumbnail',
     "user_id" INTEGER NOT NULL,
     "signature" TEXT NOT NULL,
-    "amount" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "done" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -39,7 +43,6 @@ CREATE TABLE "Task" (
 CREATE TABLE "Option" (
     "id" SERIAL NOT NULL,
     "image_url" TEXT NOT NULL,
-    "option_id" INTEGER NOT NULL,
     "task_id" INTEGER NOT NULL,
 
     CONSTRAINT "Option_pkey" PRIMARY KEY ("id")
@@ -51,9 +54,20 @@ CREATE TABLE "Submission" (
     "worker_id" INTEGER NOT NULL,
     "option_id" INTEGER NOT NULL,
     "task_id" INTEGER NOT NULL,
-    "amount" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
 
     CONSTRAINT "Submission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Payouts" (
+    "id" SERIAL NOT NULL,
+    "user_id" INTEGER NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "signature" TEXT NOT NULL,
+    "status" "TxnStatus" NOT NULL,
+
+    CONSTRAINT "Payouts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -64,6 +78,9 @@ CREATE UNIQUE INDEX "Worker_address_key" ON "Worker"("address");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Balance_worker_id_key" ON "Balance"("worker_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Submission_worker_id_task_id_key" ON "Submission"("worker_id", "task_id");
 
 -- AddForeignKey
 ALTER TABLE "Balance" ADD CONSTRAINT "Balance_worker_id_fkey" FOREIGN KEY ("worker_id") REFERENCES "Worker"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -82,3 +99,6 @@ ALTER TABLE "Submission" ADD CONSTRAINT "Submission_option_id_fkey" FOREIGN KEY 
 
 -- AddForeignKey
 ALTER TABLE "Submission" ADD CONSTRAINT "Submission_task_id_fkey" FOREIGN KEY ("task_id") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Payouts" ADD CONSTRAINT "Payouts_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

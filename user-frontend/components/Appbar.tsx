@@ -34,8 +34,8 @@ export default function Appbar() {
 
     return (
         <div className="flex justify-between items-center px-8 py-4 border-b">
-            <span className="text-2xl">dFiver</span>
-            <Link href='/tasks' prefetch={true} className="text-xl hover:text-blue-700">Tasks</Link>
+            <Link href='/' className="text-2xl">dFiver</Link>
+            <Link href='/tasks' prefetch={true} className="text-xl">Tasks</Link>
             <div className="">
                 {publicKey
                     ? <WalletDisconnectButton onClick={async () => {

@@ -103,6 +103,7 @@ function Option({ imageURL, onSelect }: {
                 placeholder='blur'
                 blurDataURL={rgbDataURL(128, 128, 128)}
                 onClick={onSelect}
+                unoptimized
             />
         </div>
     )
