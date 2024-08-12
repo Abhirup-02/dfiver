@@ -16,7 +16,6 @@ app.use(cors({
     origin: [process.env.USER_FRONTEND!, process.env.WORKER_FRONTEND!],
     credentials: true
 }))
-app.use(morgan('tiny'))
 app.use(cookieSession({
     name: 'dFiver_session',
     secret: process.env.COOKIE_SECRET,
@@ -27,11 +26,16 @@ app.use(cookieSession({
     signed: true,
     overwrite: true
 }))
+app.use(morgan('tiny'))
+
+
 
 app.use('/v1/user', userRouter)
 app.use('/v1/worker', workerRouter)
 
-const port = 8000
+
+
+const port = process.env.PORT
 httpServer.listen(port, () => {
     console.log(`Server PORT : ${port}`)
 })
