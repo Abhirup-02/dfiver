@@ -5,6 +5,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import cookieSession from 'cookie-session'
 import { createServer } from 'node:http'
+import { Server } from 'socket.io'
 
 process.loadEnvFile()
 
@@ -33,6 +34,30 @@ app.use(morgan('tiny'))
 app.use('/v1/user', userRouter)
 app.use('/v1/worker', workerRouter)
 
+
+const io = new Server(httpServer, {
+    cors: {
+        origin: process.env.NODE_ENV === 'production' ? [process.env.USER_FRONTEND!, process.env.WORKER_FRONTEND!] : '*',
+        allowedHeaders: ['Access-Control-Allow-Origin'],
+        credentials: true
+    },
+    pingTimeout: 60000
+})
+
+
+
+io.on('connection', (socket) => {
+    console.log('User Connected.')
+
+    socket.on('message', (msg) => {
+        console.log(msg)
+    })
+
+
+    socket.on('disconnect', () => {
+        console.log('User Disconnected.')
+    })
+})
 
 
 const port = process.env.PORT
