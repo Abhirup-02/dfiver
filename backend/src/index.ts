@@ -9,6 +9,10 @@ import { Server } from 'socket.io'
 
 process.loadEnvFile()
 
+
+require('./lib/queues/payoutQueue')
+
+
 const app = express()
 const httpServer = createServer(app)
 

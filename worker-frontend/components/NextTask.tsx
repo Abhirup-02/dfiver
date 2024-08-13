@@ -27,14 +27,14 @@ export default function NextTask() {
 
 
     useEffect(() => {
-        nextTask()
+        publicKey && nextTask()
             .then((data) => {
                 setCurrentTask(data)
             })
             .catch((e) => {
                 console.log(e)
             })
-    }, [])
+    }, [publicKey])
 
 
     if (!publicKey) {

@@ -29,7 +29,7 @@ export default function Appbar() {
             }
         }
 
-        signAndSend()
+        publicKey && signAndSend()
     }, [publicKey])
 
     return (

@@ -18,10 +18,10 @@ export default function Appbar() {
             try {
                 const message = new TextEncoder().encode(`Sign into dFiver as a worker on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
                 const signature = await signMessage?.(message)
-
+                
                 if (!signature) return
 
-                await workerSignIn(publicKey.toString(), signature)
+                await workerSignIn(publicKey!.toString(), signature)
             }
             catch (err) {
                 console.log(err)
@@ -33,9 +33,9 @@ export default function Appbar() {
             setBalance(amount)
         }
 
-        signAndSend()
-        pendingAmount()
-    }, [])
+        publicKey && signAndSend()
+        publicKey && pendingAmount()
+    }, [publicKey])
 
     return (
         <div className="flex justify-between items-center px-8 py-4 border-b">

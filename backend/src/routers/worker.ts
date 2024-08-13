@@ -1,13 +1,13 @@
-import bs58 from "bs58";
 import jwt from 'jsonwebtoken'
 import nacl from 'tweetnacl'
-import { Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js"
 import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import { workerAuthMiddleware } from "../middleware";
 import { getNextTask } from "../db";
 import { createSubmissionInput } from "../types";
-import { connection, LAMPORT, PARENT_WALLET_ADDRESS, PARENT_WALLET_PRIVATE_KEY, TOTAL_DECIMALS, TOTAL_SUBMISSIONS } from "../config";
+import { TOTAL_DECIMALS, TOTAL_SUBMISSIONS } from "../config";
+import { payoutQueue } from "../lib/store";
 
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!
 
@@ -41,67 +41,77 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
     //@ts-ignore
     const workerID = req.workerID
 
-    const worker = await prismaClient.worker.findFirst({
-        where: {
-            id: workerID
-        },
-        include: {
-            balance: true
-        }
-    })
-
-
-    if (!worker) {
-        return res.status(403).json({
-            message: 'Worker not Found'
-        })
-    }
-
-
-    const transaction = new Transaction().add(
-        SystemProgram.transfer({
-            fromPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
-            toPubkey: new PublicKey(worker.address),
-            lamports: LAMPORT * (worker.balance?.pending_amount! / TOTAL_DECIMALS)
-        })
-    )
-
-    const keypair = Keypair.fromSecretKey(bs58.decode(PARENT_WALLET_PRIVATE_KEY))
-
-    const signature = await sendAndConfirmTransaction(connection, transaction, [keypair])
-
-    // If transaction succeeds and then the server fails, so DB entry doesn't happen, then user owe them money again. Better approach is add the payout request to a queue and process it asynchronously
-    await prismaClient.$transaction(async (tx) => {
-        await tx.balance.update({
+    try {
+        const worker = await prismaClient.worker.findFirst({
             where: {
-                worker_id: workerID
+                id: workerID
             },
-            data: {
-                pending_amount: {
-                    decrement: worker.balance?.pending_amount
-                },
-                locked_amount: {
-                    increment: worker.balance?.pending_amount
-                }
+            include: {
+                balance: true
             }
         })
 
-        await tx.payouts.create({
-            data: {
-                user_id: workerID,
-                amount: worker.balance?.pending_amount!,
-                status: 'Processing',
-                signature
-            }
-        })
-    })
+        if (!worker) {
+            return res.status(403).json({
+                message: 'Worker not Found'
+            })
+        }
 
-    //send txn to solana blockchain
 
-    res.json({
-        message: "Processing Payout",
-        amount: `${worker.balance?.pending_amount! / TOTAL_DECIMALS} SOL`
-    })
+
+        // If transaction succeeds and then the server fails, so DB entry doesn't happen, then user owe them money again. Better approach is add the payout request to a queue and process it asynchronously
+        try {
+            const data = await prismaClient.$transaction(async (tx) => {
+                await tx.balance.update({
+                    where: {
+                        worker_id: workerID
+                    },
+                    data: {
+                        pending_amount: {
+                            decrement: worker.balance?.pending_amount
+                        },
+                        locked_amount: {
+                            increment: worker.balance?.pending_amount
+                        }
+                    }
+                })
+
+                const payout = await tx.payouts.create({
+                    data: {
+                        user_id: workerID,
+                        amount: worker.balance?.pending_amount!,
+                        status: 'Processing'
+                    }
+                })
+
+
+                return payout
+            })
+
+
+            await payoutQueue.add(`payout_${worker.address}`, {
+                payout_id: data.id,
+                to: worker.address,
+                amount: worker.balance?.pending_amount
+            })
+
+
+            res.json({
+                message: 'Your payout will reflect to wallet later',
+                amount: `${worker.balance?.pending_amount! / TOTAL_DECIMALS} SOL`
+            })
+        }
+        catch (err) {
+            console.log(err)
+
+            res.json({
+                message: 'Something went wrong'
+            })
+        }
+    }
+    catch (err) {
+        console.log(err)
+    }
 })
 
 router.post('/submission', workerAuthMiddleware, async (req, res) => {
@@ -164,14 +174,7 @@ router.get('/next-task', workerAuthMiddleware, async (req, res) => {
 
     const task = await getNextTask(Number(workerID))
 
-    if (!task) {
-        res.status(411).json({
-            message: 'NO more tasks left for you to review'
-        })
-    }
-    else {
-        res.json({ task })
-    }
+    res.json({ task })
 })
 
 router.post('/signin', async (req, res) => {

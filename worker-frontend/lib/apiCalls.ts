@@ -48,7 +48,12 @@ export async function nextTask() {
 
         const data = await res.json()
 
-        return data.task
+        if (res.status == 200) {
+            return data.task
+        }
+        if (res.status == 411) {
+            return data.message
+        }
     }
     catch (err) {
         console.error(err)
