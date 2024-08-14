@@ -33,6 +33,8 @@ router.get('/all-tasks', userAuthMiddleware, async (req, res) => {
         }
     })
 
+    if (tasks) tasks.forEach(task => task.amount = task.amount / TOTAL_DECIMALS)
+
     if (!tasks) {
         return res.status(411).json({
             message: "You don't have access to this task"
