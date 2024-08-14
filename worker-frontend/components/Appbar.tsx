@@ -18,7 +18,7 @@ export default function Appbar() {
             try {
                 const message = new TextEncoder().encode(`Sign into dFiver as a worker on ${new Date().getDate()}.${new Date().getMonth()}.${new Date().getFullYear()}`)
                 const signature = await signMessage?.(message)
-                
+
                 if (!signature) return
 
                 await workerSignIn(publicKey!.toString(), signature)
@@ -43,10 +43,13 @@ export default function Appbar() {
                 dFiver
             </div>
             <div className="flex gap-4 items-center">
-                {publicKey &&
+                {(publicKey && balance > 0) &&
                     <button
                         className="h-[60%] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-md text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
-                        onClick={payout}
+                        onClick={() => {
+                            payout()
+                            location.reload()
+                        }}
                     >
                         Pay me out ({balance}) SOL
                     </button>
