@@ -56,7 +56,7 @@ export default function AllTasks() {
                         <span className='text-2xl'>
                             {task.title}
                         </span>
-                        <span className=''>Amount: {task.amount}</span>
+                        <span className=''>Amount: {task.amount}SOL</span>
                         <span className={`${task.done ? 'bg-red-500' : 'bg-blue-400'} px-4 py-[4px] rounded-lg`}>{task.done ? 'Closed' : 'Open'}</span>
                     </div>
                 ))}
