@@ -5,7 +5,7 @@ import cors from 'cors'
 import morgan from 'morgan'
 import cookieSession from 'cookie-session'
 import { createServer } from 'node:http'
-import { Server } from 'socket.io'
+import { Server, Socket } from 'socket.io'
 
 process.loadEnvFile()
 
@@ -39,6 +39,7 @@ app.use('/v1/user', userRouter)
 app.use('/v1/worker', workerRouter)
 
 
+
 const io = new Server(httpServer, {
     cors: {
         origin: process.env.NODE_ENV === 'production' ? [process.env.USER_FRONTEND!, process.env.WORKER_FRONTEND!] : '*',
@@ -49,19 +50,17 @@ const io = new Server(httpServer, {
 })
 
 
+const onConnection = (socket: Socket) => {
 
-io.on('connection', (socket) => {
     console.log('User Connected.')
 
-    socket.on('message', (msg) => {
-        console.log(msg)
-    })
+    // socket.on("order:create", createOrder)
+
+    socket.on('disconnect', () => console.log('User Disconnected.'))
+}
 
 
-    socket.on('disconnect', () => {
-        console.log('User Disconnected.')
-    })
-})
+io.on('connection', onConnection)
 
 
 const port = process.env.PORT
