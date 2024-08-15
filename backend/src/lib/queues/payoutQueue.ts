@@ -1,7 +1,7 @@
 import bs58 from "bs58"
 import { Worker } from "bullmq"
-import { Keypair, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js"
-import { connection, LAMPORT, PARENT_WALLET_ADDRESS, PARENT_WALLET_PRIVATE_KEY, TOTAL_DECIMALS } from "../../config";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey, sendAndConfirmTransaction, SystemProgram, Transaction } from "@solana/web3.js"
+import { connection, PARENT_WALLET_ADDRESS, PARENT_WALLET_PRIVATE_KEY, TOTAL_DECIMALS } from "../../config";
 import { PrismaClient } from "@prisma/client";
 import { payoutQueue } from "../store";
 
@@ -27,7 +27,7 @@ async function processPayout({ to, amount }: Payload) {
             SystemProgram.transfer({
                 fromPubkey: new PublicKey(PARENT_WALLET_ADDRESS),
                 toPubkey: new PublicKey(to),
-                lamports: LAMPORT * (amount / TOTAL_DECIMALS)
+                lamports: LAMPORTS_PER_SOL * (amount / TOTAL_DECIMALS)
             })
         )
 
