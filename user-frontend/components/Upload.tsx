@@ -1,10 +1,11 @@
 'use client'
-import { PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
+import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 import UploadImage from "@/components/UploadImage";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { createTask } from '@/lib/apiCalls';
+import Loader from './Loader';
 
 export default function Upload() {
     const router = useRouter()
@@ -12,28 +13,30 @@ export default function Upload() {
     const [images, setImages] = useState<Array<string>>([])
     const [txnSignature, setTxnSignature] = useState<string>()
 
+    const [loading, setLoading] = useState(false)
+
     const { connection } = useConnection()
     const { publicKey, sendTransaction } = useWallet()
 
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-
+        setLoading(true)
         const taskID = await createTask(images, title, txnSignature!)
-
+        setLoading(false)
         router.push(`/tasks/${taskID}`)
     }
 
 
     async function makePayment(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
-
+        setLoading(true)
         try {
             const transaction = new Transaction().add(
                 SystemProgram.transfer({
                     fromPubkey: publicKey!,
                     toPubkey: new PublicKey(process.env.NEXT_PUBLIC_PARENT_WALLET_ADDRESS!),
-                    lamports: 100000000
+                    lamports: LAMPORTS_PER_SOL / 10
                 })
             )
 
@@ -51,6 +54,7 @@ export default function Upload() {
         catch (err) {
             console.log(err)
         }
+        setLoading(false)
     }
 
 
@@ -93,7 +97,11 @@ export default function Upload() {
                         type="submit"
                         className="w-32 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-xl text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                     >
-                        {txnSignature ? 'Submit Task' : 'Pay 0.1 SOL'}
+                        {txnSignature ? (
+                            loading ? <Loader bgHeight='1.2rem' width='1.2rem' height='1.2rem' color='' /> : 'Submit Task'
+                        ) : (
+                            loading ? <Loader bgHeight='1.2rem' width='1.2rem' height='1.2rem' color='' /> : 'Pay 0.1 SOL'
+                        )}
                     </button>
                 </div>
 
