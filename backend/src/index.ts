@@ -39,11 +39,11 @@ app.use('/v1/user', userRouter)
 app.use('/v1/worker', workerRouter)
 
 
-// app.use('/minio/events', async (req, res) => {
-//     console.log(req.body)
+app.use('/minio/events', async (req, res) => {
+    console.log(req.body)
 
-//     res.json('Event Received')
-// })
+    res.json('Event Received')
+})
 
 
 
