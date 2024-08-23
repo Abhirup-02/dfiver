@@ -32,6 +32,7 @@ router.get('/balance', workerAuthMiddleware, async (req, res) => {
     else {
         res.json({
             pendingAmount: workerBalance.pending_amount / TOTAL_DECIMALS,
+            processingAmount: workerBalance.processing_amount / TOTAL_DECIMALS,
             lockedAmount: workerBalance.locked_amount / TOTAL_DECIMALS
         })
     }
@@ -70,7 +71,7 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
                         pending_amount: {
                             decrement: worker.balance?.pending_amount
                         },
-                        locked_amount: {
+                        processing_amount: {
                             increment: worker.balance?.pending_amount
                         }
                     }
@@ -78,12 +79,11 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
 
                 const payout = await tx.payouts.create({
                     data: {
-                        user_id: workerID,
+                        worker_id: workerID,
                         amount: worker.balance?.pending_amount!,
                         status: 'Processing'
                     }
                 })
-
 
                 return payout
             })
@@ -97,7 +97,7 @@ router.post('/payout', workerAuthMiddleware, async (req, res) => {
 
 
             res.json({
-                message: 'Your payout will reflect to wallet later',
+                message: 'Your payout is processing',
                 amount: `${worker.balance?.pending_amount! / TOTAL_DECIMALS} SOL`
             })
         }
@@ -225,6 +225,7 @@ router.post('/signin', async (req, res) => {
                     data: {
                         worker_id: worker.id,
                         pending_amount: 0,
+                        processing_amount: 0,
                         locked_amount: 0
                     }
                 })

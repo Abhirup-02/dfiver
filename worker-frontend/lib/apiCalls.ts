@@ -93,7 +93,10 @@ export async function getBalance() {
 
         const data = await res.json()
 
-        return data.pendingAmount
+        return {
+            pendingAmount: data.pendingAmount,
+            processingAmount: data.processingAmount
+        }
     }
     catch (err) {
         console.error(err)

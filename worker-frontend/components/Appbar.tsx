@@ -4,11 +4,13 @@ import { WalletMultiButton, WalletDisconnectButton } from '@solana/wallet-adapte
 import { useWallet } from '@solana/wallet-adapter-react';
 import { useEffect, useState } from 'react';
 import { getBalance, logout, payout, workerSignIn } from '@/lib/apiCalls';
+import { RefreshCcw } from 'lucide-react';
 
 export default function Appbar() {
 
     const { publicKey, signMessage } = useWallet()
-    const [balance, setBalance] = useState(0)
+    const [pendingAmount, setPendingAmount] = useState(0)
+    const [processingAmount, setProcessingAmount] = useState(0)
 
     useEffect(() => {
         async function signAndSend() {
@@ -28,13 +30,17 @@ export default function Appbar() {
             }
         }
 
-        async function pendingAmount() {
-            const amount = await getBalance()
-            setBalance(amount)
+        async function amount() {
+            const data = await getBalance()
+
+            if (data) {
+                setPendingAmount(data.pendingAmount)
+                setProcessingAmount(data.processingAmount)
+            }
         }
 
         publicKey && signAndSend()
-        publicKey && pendingAmount()
+        publicKey && amount()
     }, [publicKey])
 
     return (
@@ -43,7 +49,13 @@ export default function Appbar() {
                 dFiver
             </div>
             <div className="flex gap-4 items-center">
-                {(publicKey && balance > 0) &&
+                {(publicKey && processingAmount > 0) &&
+                    <div className="flex items-center">
+                        {processingAmount} SOL&nbsp;
+                        <RefreshCcw className="w-3 h-3" />
+                    </div>
+                }
+                {(publicKey && pendingAmount > 0) &&
                     <button
                         className="h-[60%] bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-md text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
                         onClick={() => {
@@ -51,7 +63,7 @@ export default function Appbar() {
                             location.reload()
                         }}
                     >
-                        Pay me out ({balance}) SOL
+                        Pay me out ({pendingAmount}) SOL
                     </button>
                 }
 

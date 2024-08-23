@@ -31,15 +31,41 @@ export const payoutWorker = new Worker('payouts', async (job) => {
         await job.moveToFailed(new Error('Payout to worker failed'), 'Payout to worker failed', true)
     }
     else {
-        await prismaClient.payouts.update({
+        const worker = await prismaClient.worker.findUnique({
             where: {
-                id: data.payout_id
-            },
-            data: {
-                signature,
-                status: 'Success'
+                address: data.to
             }
         })
+
+        if (!worker) throw new Error("Worker not found")
+
+        await prismaClient.$transaction(async (tx) => {
+            await tx.balance.update({
+                where: {
+                    worker_id: worker.id
+                },
+                data: {
+                    processing_amount: {
+                        decrement: data.amount
+                    },
+                    locked_amount: {
+                        increment: data.amount
+                    }
+                }
+            })
+
+
+            await tx.payouts.update({
+                where: {
+                    id: data.payout_id
+                },
+                data: {
+                    signature,
+                    status: 'Success'
+                }
+            })
+        })
+
 
         return 'Payment Successful'
     }

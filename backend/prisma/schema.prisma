@@ -8,10 +8,9 @@ datasource db {
 }
 
 model User {
-  id      Int       @id @default(autoincrement())
-  address String    @unique
+  id      Int    @id @default(autoincrement())
+  address String @unique
   tasks   Task[]
-  Payouts Payouts[]
 }
 
 model Worker {
@@ -19,14 +18,16 @@ model Worker {
   address     String       @unique
   submissions Submission[]
   balance     Balance?
+  Payouts     Payouts[]
 }
 
 model Balance {
-  id             Int    @id @default(autoincrement())
-  pending_amount Int // amount in lamports
-  locked_amount  Int
-  worker_id      Int    @unique
-  worker         Worker @relation(fields: [worker_id], references: [id])
+  id                Int    @id @default(autoincrement())
+  pending_amount    Int // amount in lamports
+  processing_amount Int
+  locked_amount     Int
+  worker_id         Int    @unique
+  worker            Worker @relation(fields: [worker_id], references: [id])
 }
 
 model Task {
@@ -64,8 +65,8 @@ model Submission {
 
 model Payouts {
   id        Int       @id @default(autoincrement())
-  user_id   Int
-  user      User      @relation(fields: [user_id], references: [id])
+  worker_id Int
+  worker    Worker    @relation(fields: [worker_id], references: [id])
   amount    Int
   signature String?
   status    TxnStatus
