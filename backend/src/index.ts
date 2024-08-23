@@ -10,11 +10,9 @@ import { Server, Socket } from 'socket.io'
 process.loadEnvFile()
 
 
-require('./lib/queues/payoutQueue')
-
-
 const app = express()
 const httpServer = createServer(app)
+
 
 app.use(express.json())
 app.use(cors({

@@ -7,7 +7,7 @@ import { workerAuthMiddleware } from "../middleware";
 import { getNextTask } from "../db";
 import { createSubmissionInput } from "../types";
 import { TOTAL_DECIMALS, TOTAL_SUBMISSIONS } from "../config";
-import { payoutQueue } from "../lib/store";
+import { payoutQueue } from '../lib/queues/config';
 
 const WORKER_JWT_SECRET = process.env.WORKER_JWT_SECRET!
 

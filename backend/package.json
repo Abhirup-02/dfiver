@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "tsc -b && node dist/index"
+    "start": "tsc -b && node dist/index",
+    "start:payoutWorker": "node dist/workers/payout",
+    "start:failedPayoutWorker": "node dist/workers/failed-payout"
   },
   "keywords": [],
   "author": "",
